@@ -1,59 +1,41 @@
-# SI2Frontend
+# Inmobiliaria Raíces
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.5.
+Este es el repositorio oficial del sistema de gestión inmobiliaria "Raíces", desarrollado como parte del proyecto de la materia Sistemas de Información II.
 
-## Development server
+## Estado del Proyecto
+Actualmente se ha completado el **Sprint 0** (Autenticación y Seguridad). El sistema cuenta con:
+* Autenticación JWT y encriptación bcrypt
+* Navegación SPA con Angular y FastAPI
+* Sistema de diseño limpio (Glassmorphism, sin emojis)
+* Gestión y visualización de roles (CU-05)
+* Cambio y recuperación de contraseña (CU-03, CU-04)
 
-To start a local development server, run:
+## Credenciales de Acceso (Usuarios de Prueba)
+Se han generado cuentas de prueba con los diferentes roles activos en el sistema para facilitar la validación de las vistas y permisos.
 
+Todas las contraseñas cumplen con las políticas de seguridad (mínimo 8 caracteres, mayúsculas, números y símbolos).
+
+| Rol | Correo / Usuario | Contraseña |
+| --- | --- | --- |
+| **Administrador** | `admin@raices.com` | `Admin.123@` |
+| **Agente Inmobiliario** | `agente@raices.com` | `Password.123@` |
+| **Propietario** | `propietario@raices.com` | `Password.123@` |
+| **Cliente** | `cliente@raices.com` | `Password.123@` |
+
+## 🛠 Tecnologías Utilizadas
+* **Backend:** FastAPI (Python), SQLAlchemy, SQLite
+* **Frontend:** Angular 18 (TypeScript), HTML5, CSS3 Nativo
+
+## Instrucciones de Ejecución Local
+### Iniciar Backend
 ```bash
-ng serve
+cd SI2-Backend
+.\venv\Scripts\activate
+uvicorn main:app --reload
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+### Iniciar Frontend
 ```bash
-ng generate component component-name
+cd SI2-Frontend
+ng serve -o
 ```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
