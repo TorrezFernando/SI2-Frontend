@@ -1,0 +1,36 @@
+<div class="profile-container">
+    <div class="card">
+        <div class="card-header">
+            <h3>Seguridad de la Cuenta</h3>
+            <p>Actualiza tu contraseña de acceso al sistema</p>
+        </div>
+        
+        <div class="card-body">
+            <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': !error, 'alert-danger': error}">
+                {{ mensaje }}
+            </div>
+
+            <form [formGroup]="passwordForm" (ngSubmit)="cambiarPassword()">
+                <div class="form-group">
+                    <label for="nueva_password">Nueva Contraseña</label>
+                    <input type="password" id="nueva_password" formControlName="nueva_password" class="form-control" placeholder="Escribe tu nueva contraseña">
+                    <small *ngIf="passwordForm.get('nueva_password')?.hasError('required') && passwordForm.get('nueva_password')?.touched" class="text-danger">
+                        La contraseña es obligatoria.
+                    </small>
+                    <small *ngIf="passwordForm.get('nueva_password')?.hasError('minlength') && passwordForm.get('nueva_password')?.touched" class="text-danger">
+                        Debe tener al menos 8 caracteres.
+                    </small>
+                    <small *ngIf="passwordForm.get('nueva_password')?.hasError('pattern') && passwordForm.get('nueva_password')?.touched" class="text-danger">
+                        Debe incluir al menos 1 mayúscula, 1 número y 1 carácter especial (@$!%*?&).
+                    </small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary" [disabled]="passwordForm.invalid">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

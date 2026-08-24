@@ -1,0 +1,38 @@
+<div class="dashboard-container">
+    <!-- Menú Lateral (Sidebar) -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Raíces</h2>
+            <p>Admin Panel</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <!-- Enlaces a los componentes del Sprint 0 -->
+            <a routerLink="/dashboard/profile" class="nav-link" routerLinkActive="active">
+                Mi Perfil
+            </a>
+            <a *ngIf="userRole === 1" routerLink="/dashboard/roles" class="nav-link" routerLinkActive="active">
+                Gestión de Roles
+            </a>
+            
+            <div class="divider"></div>
+            
+            <!-- CU-02: Cerrar Sesión -->
+            <button class="btn-logout" (click)="logout()">
+                Cerrar Sesión
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Contenido Principal (Aquí cargarán Profile y Roles) -->
+    <main class="main-content">
+        <header class="topbar">
+            <h3>Bienvenido al Sistema</h3>
+        </header>
+        
+        <div class="content-area">
+            <!-- Magia de Angular: Aquí se inyectan las rutas hijas -->
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>

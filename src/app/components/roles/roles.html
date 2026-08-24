@@ -1,0 +1,64 @@
+<div class="roles-container">
+    <div class="header-section">
+        <div>
+            <h2>Gestión de Roles</h2>
+            <p>Administra los permisos de acceso al sistema</p>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <!-- Formulario para agregar nuevo rol -->
+        <div class="card add-role-card">
+            <div class="card-header">
+                <h3>Crear Nuevo Rol</h3>
+            </div>
+            <div class="card-body">
+                <div *ngIf="mensaje" class="alert" [ngClass]="{'alert-success': !error, 'alert-danger': error}">
+                    {{ mensaje }}
+                </div>
+                
+                <form [formGroup]="rolForm" (ngSubmit)="agregarRol()">
+                    <div class="form-group">
+                        <label for="nombre">Nombre del Rol</label>
+                        <input type="text" id="nombre" formControlName="nombre" class="form-control" placeholder="Ej: Administrador, Asistente...">
+                        <small *ngIf="rolForm.get('nombre')?.invalid && rolForm.get('nombre')?.touched" class="text-danger">
+                            El nombre debe tener al menos 3 letras.
+                        </small>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" [disabled]="rolForm.invalid">
+                        + Agregar Rol
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabla de roles existentes -->
+        <div class="card roles-list-card">
+            <div class="card-header">
+                <h3>Roles Activos</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre del Rol</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let rol of roles">
+                            <td>#{{ rol.id_rol }}</td>
+                            <td class="fw-bold">{{ rol.nombre }}</td>
+                            <td><span class="badge badge-success">Activo</span></td>
+                        </tr>
+                        <tr *ngIf="roles.length === 0">
+                            <td colspan="3" class="text-center empty-state">Cargando roles...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
