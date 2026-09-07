@@ -30,7 +30,7 @@ export class Profile {
       const token = localStorage.getItem('token');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
       
-      this.http.put('http://localhost:8000/users/me/password', this.passwordForm.value, { headers }).subscribe({
+      this.http.put('http://localhost:8000/gestion_usuarios/users/me/password', this.passwordForm.value, { headers }).subscribe({
         next: (res: any) => {
           this.mensaje = '¡Contraseña actualizada con éxito!';
           this.error = false;

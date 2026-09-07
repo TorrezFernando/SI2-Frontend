@@ -24,7 +24,7 @@ export class ForgotPassword {
 
   onSubmit() {
     if (this.forgotForm.valid) {
-      this.http.post('http://localhost:8000/forgot-password', this.forgotForm.value).subscribe({
+      this.http.post('http://localhost:8000/gestion_usuarios/auth/forgot-password', this.forgotForm.value).subscribe({
         next: (res: any) => {
           this.mensaje = res.message;
           this.enviado = true;

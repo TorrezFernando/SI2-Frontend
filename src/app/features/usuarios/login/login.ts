@@ -24,7 +24,7 @@ export class Login {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      this.http.post('http://localhost:8000/login', this.loginForm.value).subscribe({
+      this.http.post('http://localhost:8000/gestion_usuarios/auth/login', this.loginForm.value).subscribe({
         next: (response: any) => {
           localStorage.setItem('token', response.access_token);
           

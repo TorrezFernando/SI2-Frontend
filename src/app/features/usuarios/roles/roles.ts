@@ -30,7 +30,7 @@ export class Roles implements OnInit {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     
-    this.http.get('http://localhost:8000/roles', { headers }).subscribe({
+    this.http.get('http://localhost:8000/gestion_usuarios/roles', { headers }).subscribe({
       next: (data: any) => {
         this.roles = data;
         this.cdr.detectChanges(); // Forzar actualización de la UI
@@ -44,7 +44,7 @@ export class Roles implements OnInit {
       const token = localStorage.getItem('token');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
       
-      this.http.post('http://localhost:8000/roles', this.rolForm.value, { headers }).subscribe({
+      this.http.post('http://localhost:8000/gestion_usuarios/roles', this.rolForm.value, { headers }).subscribe({
         next: (nuevoRol: any) => {
           this.roles.push(nuevoRol);
           this.rolForm.reset();

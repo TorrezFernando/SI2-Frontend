@@ -1,37 +1,80 @@
-<div class="dashboard-container">
-    <!-- Menú Lateral (Sidebar) -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>Raíces</h2>
-            <p>Admin Panel</p>
+<div class="luxury-dashboard">
+    <!-- Menú Lateral -->
+    <aside class="luxury-sidebar">
+        <div class="sidebar-brand">
+            <h2 class="brand-text">Raíces</h2>
+            <p class="brand-subtext">{{ rolNombre }}</p>
         </div>
         
         <nav class="sidebar-nav">
-            <!-- Enlaces a los componentes del Sprint 0 -->
-            <a routerLink="/dashboard/profile" class="nav-link" routerLinkActive="active">
+            <p class="nav-section-title">Principal</p>
+            <a routerLink="/dashboard/profile" class="luxury-nav-link" routerLinkActive="active">
                 Mi Perfil
             </a>
-            <a *ngIf="userRole === 1" routerLink="/dashboard/roles" class="nav-link" routerLinkActive="active">
-                Gestión de Roles
+            
+            <a routerLink="/catalogo" class="luxury-nav-link text-gold" target="_blank">
+                Catálogo Público
             </a>
             
-            <div class="divider"></div>
+        <!-- Solo Admin: Gestión -->
+        <div class="mb-4" *ngIf="userRole === 1">
+            <h4 class="text-xs uppercase text-gray-500 mb-2 px-4 tracking-wider">Gestión</h4>
+            <a routerLink="/dashboard/usuarios" class="luxury-nav-link" routerLinkActive="active">
+                Gestión de Usuarios
+            </a>
+            <a routerLink="/dashboard/roles" class="luxury-nav-link" routerLinkActive="active">
+                Gestión de Roles
+            </a>
+        </div>
+        
+        <!-- Admin y Agente: Inmuebles -->
+        <div class="mb-4" *ngIf="userRole === 1 || userRole === 2">
+            <h4 class="text-xs uppercase text-gray-500 mb-2 px-4 tracking-wider">Inmuebles</h4>
+            <a *ngIf="userRole === 1" routerLink="/dashboard/clientes" class="luxury-nav-link" routerLinkActive="active">
+                Clientes
+            </a>
+            <a *ngIf="userRole === 1" routerLink="/dashboard/propietarios" class="luxury-nav-link" routerLinkActive="active">
+                Propietarios
+            </a>
+            <a *ngIf="userRole === 1" routerLink="/dashboard/agentes" class="luxury-nav-link" routerLinkActive="active">
+                Agentes
+            </a>
+            <a routerLink="/dashboard/propiedades" class="luxury-nav-link" routerLinkActive="active">
+                Propiedades
+            </a>
+        </div>
+
+        <!-- Propietario: Solo Propiedades -->
+        <div class="mb-4" *ngIf="userRole === 4">
+            <h4 class="text-xs uppercase text-gray-500 mb-2 px-4 tracking-wider">Inmuebles</h4>
+            <a routerLink="/dashboard/propiedades" class="luxury-nav-link" routerLinkActive="active">
+                Mis Propiedades
+            </a>
+        </div>
             
-            <!-- CU-02: Cerrar Sesión -->
-            <button class="btn-logout" (click)="logout()">
+            <div class="spacer"></div>
+            
+            <button class="btn-logout-luxury" (click)="logout()">
                 Cerrar Sesión
             </button>
         </nav>
     </aside>
 
-    <!-- Contenido Principal (Aquí cargarán Profile y Roles) -->
-    <main class="main-content">
-        <header class="topbar">
-            <h3>Bienvenido al Sistema</h3>
+    <!-- Contenido Principal -->
+    <main class="luxury-main">
+        <header class="luxury-topbar">
+            <div class="topbar-left">
+                <h3 class="topbar-title">Bienvenido al Panel de Control</h3>
+            </div>
+            <div class="topbar-right">
+                <div class="tenant-badge">
+                    <span class="tenant-label">Inmobiliaria:</span>
+                    <span class="tenant-name">{{ tenantNombre || 'Premium' }}</span>
+                </div>
+            </div>
         </header>
         
-        <div class="content-area">
-            <!-- Magia de Angular: Aquí se inyectan las rutas hijas -->
+        <div class="luxury-content-area animate-fade-in">
             <router-outlet></router-outlet>
         </div>
     </main>

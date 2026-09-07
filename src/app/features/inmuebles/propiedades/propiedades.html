@@ -1,0 +1,84 @@
+<div class="animate-fade-in p-6">
+  <h2 class="text-3xl font-bold mb-6">{{ userRole === 1 ? 'Gestión de Propiedades' : 'Propiedades' }}</h2>
+  
+  <!-- Solo Admin puede registrar propiedades -->
+  <div class="luxury-card mb-8" *ngIf="userRole === 1">
+    <h3 class="text-xl mb-4">Registrar Propiedad</h3>
+    <div *ngIf="mensajeError" style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+      {{ mensajeError }}
+    </div>
+    <div *ngIf="mensajeExito" style="background-color: #f0fdf4; color: #166534; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+      {{ mensajeExito }}
+    </div>
+    <form [formGroup]="propiedadForm" (ngSubmit)="onSubmit()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div>
+        <label class="block text-sm mb-2 text-muted">Propietario</label>
+        <select formControlName="id_propietario" class="modern-input">
+          <option value="" disabled selected>Seleccione el Propietario</option>
+          <option *ngFor="let prop of propietarios" [value]="prop.id_propietario">{{prop.nombre}} (CI: {{prop.ci}})</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Agente Asignado</label>
+        <select formControlName="id_agente" class="modern-input">
+          <option value="" disabled selected>Seleccione el Agente Asignado</option>
+          <option *ngFor="let ag of agentes" [value]="ag.id_agente">{{ag.nombre}} (CI: {{ag.ci}})</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Título</label>
+        <input type="text" formControlName="titulo" class="modern-input">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Dirección</label>
+        <input type="text" formControlName="direccion" class="modern-input">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Precio ($us)</label>
+        <input type="number" formControlName="precio" class="modern-input">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Operación</label>
+        <select formControlName="tipo_operacion" class="modern-select">
+          <option value="Venta">Venta</option>
+          <option value="Alquiler">Alquiler</option>
+          <option value="Anticretico">Anticrético</option>
+        </select>
+      </div>
+      <div style="grid-column: span 2;">
+        <label class="block text-sm mb-2 text-muted">Imagen (Foto principal)</label>
+        <input type="file" (change)="onFileSelected($event)" class="modern-input" accept="image/*">
+      </div>
+      <div style="grid-column: span 2; margin-top: 1rem;">
+        <button type="submit" class="btn-primary" style="width: 100%;" [disabled]="!propiedadForm.valid">Crear Propiedad</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="luxury-card">
+    <h3 class="text-xl mb-4">Lista de Propiedades</h3>
+    <div *ngIf="propiedades.length === 0" style="text-align: center; padding: 2rem; color: #94a3b8;">
+      <p>No hay propiedades registradas aún.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+      <div *ngFor="let prop of propiedades" class="luxury-card">
+        <h4 class="font-bold text-lg" style="color: var(--primary-color);">{{prop.titulo}}</h4>
+        <p class="text-sm text-muted mb-2">{{prop.direccion}}</p>
+        <p class="font-bold">${{prop.precio}} - {{prop.tipo_operacion}}</p>
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <span class="text-sm font-semibold" 
+                [style.color]="prop.estado === 'Disponible' ? '#22c55e' : prop.estado === 'Reservada' ? '#eab308' : '#ef4444'">
+            {{prop.estado}}
+          </span>
+          <!-- Solo Admin y Agente pueden cambiar estado -->
+          <select *ngIf="userRole === 1 || userRole === 2" #estadoSelect (change)="updateEstado(prop.id_propiedad, estadoSelect.value)" class="modern-select" style="width: auto; padding: 0.25rem 0.5rem;">
+            <option value="Disponible" [selected]="prop.estado === 'Disponible'">Disponible</option>
+            <option value="Reservada" [selected]="prop.estado === 'Reservada'">Reservada</option>
+            <option value="Vendida" [selected]="prop.estado === 'Vendida'">Vendida</option>
+            <option value="Alquilada" [selected]="prop.estado === 'Alquilada'">Alquilada</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,93 @@
+<div class="animate-fade-in p-8 max-w-7xl mx-auto" style="max-width: 1200px; margin: 0 auto; padding: 3rem 1.5rem;">
+  
+  <!-- Header Minimalista Lujo -->
+  <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4rem; border-bottom: 1px solid var(--border-light); padding-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 2.5rem; color: var(--secondary-color); margin: 0; line-height: 1.1;">Raíces</h1>
+        <p style="color: var(--primary-color); text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; margin: 0; font-weight: 600;">Exclusividad & Elegancia</p>
+    </div>
+    <a href="/login" class="btn-secondary" style="text-decoration: none;">Acceso Socios</a>
+  </header>
+
+  <div class="text-center mb-12" style="text-align: center; margin-bottom: 4rem;">
+    <h2 style="font-size: 3.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--secondary-color); letter-spacing: -1px;">
+      Descubre tu Próximo Hogar
+    </h2>
+    <p style="font-size: 1.15rem; color: var(--text-muted); max-width: 600px; margin: 0 auto;">
+      Una colección selecta de propiedades de lujo diseñadas para superar tus expectativas.
+    </p>
+  </div>
+
+  <!-- Buscador y Filtros -->
+  <div class="luxury-card" style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-end; justify-content: center; margin-bottom: 4rem;">
+    <div style="flex: 1; min-width: 200px;">
+      <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--secondary-color); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Operación</label>
+      <select [(ngModel)]="filtroOperacion" class="modern-select">
+        <option value="">Cualquiera</option>
+        <option value="Venta">Venta</option>
+        <option value="Alquiler">Alquiler</option>
+        <option value="Anticretico">Anticrético</option>
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+      <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--secondary-color); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Presupuesto Mínimo</label>
+      <input type="number" [(ngModel)]="filtroPrecioMin" class="modern-input" placeholder="$ 0">
+    </div>
+    <div style="flex: 1; min-width: 150px;">
+      <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--secondary-color); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Presupuesto Máximo</label>
+      <input type="number" [(ngModel)]="filtroPrecioMax" class="modern-input" placeholder="Sin límite">
+    </div>
+    <button (click)="aplicarFiltros()" class="btn-primary" style="height: 48px; padding: 0 2.5rem;">
+      Explorar Catálogo
+    </button>
+  </div>
+
+  <!-- Resultados -->
+  <div class="grid-catalogo">
+    <div *ngFor="let prop of propiedades" class="luxury-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+      
+      <!-- Contenedor de Imagen -->
+      <div style="height: 260px; background: var(--border-light); position: relative; overflow: hidden;">
+        
+        <div *ngIf="!prop.imagenes || prop.imagenes.length === 0" style="display: flex; height: 100%; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.9rem;">
+          Imagen No Disponible
+        </div>
+        
+        <!-- Zoom effect on hover is added via inline style transition -->
+        <img *ngIf="prop.imagenes && prop.imagenes.length > 0" 
+             [src]="'http://localhost:8000' + prop.imagenes[0].url" 
+             style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;"
+             onmouseover="this.style.transform='scale(1.05)'"
+             onmouseout="this.style.transform='scale(1)'">
+             
+        <!-- Badge -->
+        <div class="badge-dark" style="position: absolute; top: 15px; right: 15px; box-shadow: var(--shadow-md);">
+          {{prop.tipo_operacion}}
+        </div>
+      </div>
+      
+      <!-- Información -->
+      <div style="padding: 2rem; flex: 1; display: flex; flex-direction: column;">
+        <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--secondary-color); line-height: 1.3;">
+            {{prop.titulo}}
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; flex: 1;">
+            {{prop.direccion}}
+        </p>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-light); padding-top: 1.5rem; margin-top: auto;">
+            <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin: 0;">
+                ${{prop.precio}}
+            </p>
+            <button class="btn-secondary" style="padding: 0.6rem 1.2rem; font-size: 0.75rem;">
+                Detalles
+            </button>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="propiedades.length === 0" style="grid-column: 1 / -1; text-align: center; padding: 4rem;" class="luxury-card">
+      <p style="color: var(--text-muted); font-size: 1.1rem;">No se encontraron propiedades que coincidan con sus criterios de búsqueda.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<div class="animate-fade-in p-6">
+  <h2 class="text-3xl font-bold mb-6">Gestión de Usuarios</h2>
+  
+  <div class="luxury-card mb-8">
+    <h3 class="text-xl mb-4">Registrar Nueva Persona</h3>
+    
+    <div *ngIf="mensajeError" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+      {{ mensajeError }}
+    </div>
+    <div *ngIf="mensajeExito" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50" style="background-color: #f0fdf4; color: #166534; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+      {{ mensajeExito }}
+    </div>
+
+    <form [formGroup]="usuarioForm" (ngSubmit)="onSubmit()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div>
+        <label class="block text-sm mb-2 text-muted">CI del Usuario</label>
+        <input type="text" formControlName="ci" class="modern-input" placeholder="Ej: 999999">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Nombre Completo</label>
+        <input type="text" formControlName="nombre" class="modern-input" placeholder="Nombre de la persona">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Correo Electrónico</label>
+        <input type="email" formControlName="correo" class="modern-input" placeholder="correo@ejemplo.com">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Teléfono</label>
+        <input type="text" formControlName="telefono" class="modern-input" placeholder="Teléfono">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Rol en el Sistema</label>
+        <select formControlName="id_rol" class="modern-input">
+          <option value="" disabled selected>Seleccione un Rol</option>
+          <option *ngFor="let rol of roles" [value]="rol.id_rol">{{rol.nombre}}</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-muted">Contraseña Temporal</label>
+        <input type="password" formControlName="password" class="modern-input" placeholder="Contraseña de acceso">
+      </div>
+      <div style="grid-column: span 2;">
+        <button type="submit" class="btn-primary" style="width: 100%;" [disabled]="!usuarioForm.valid">Guardar Usuario</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="luxury-card">
+    <h3 class="text-xl mb-4">Lista de Personas Registradas</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display: grid; gap: 1rem;">
+      <div *ngFor="let usuario of usuarios" class="luxury-card flex flex-col justify-between" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div>
+          <p class="font-bold">{{usuario.nombre}}</p>
+          <p class="text-muted text-sm">CI: {{usuario.ci}}</p>
+          <p class="text-muted text-sm">{{usuario.correo}}</p>
+          <span class="inline-block px-2 py-1 bg-gray-200 text-xs rounded mt-2" style="background-color: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+            {{ getRoleName(usuario.id_rol) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
