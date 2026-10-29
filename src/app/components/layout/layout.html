@@ -78,12 +78,15 @@
             <div class="topbar-right">
                 <div class="tenant-badge">
                     <span class="tenant-label">Inmobiliaria:</span>
-                    <span class="tenant-name">{{ tenantNombre || 'Premium' }}</span>
+                    <span class="tenant-name">{{ suscripcion?.nombre || tenantNombre || 'Inmobiliaria' }}</span>
                 </div>
             </div>
         </header>
         
         <div class="luxury-content-area animate-fade-in">
+            <aside *ngIf="suscripcion?.aviso" role="alert" style="padding:1rem;background:#fff3cd;color:#664d03;border-radius:8px;margin-bottom:1rem">
+              {{suscripcion.aviso}} <a *appHasPermission="'UI:MENU_EMPRESAS'" routerLink="/dashboard/empresas">Administrar plan y pagos</a>
+            </aside>
             <router-outlet></router-outlet>
         </div>
     </main>

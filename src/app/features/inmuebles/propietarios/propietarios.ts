@@ -20,6 +20,7 @@ export class Propietarios implements OnInit {
   mensajeError: string = '';
   mensajeExito: string = '';
 
+  get isSuperAdmin(): boolean { return JSON.parse(localStorage.getItem('user') || '{}').is_superadmin === true; }
   userRole: number = 0;
 
   // SuperAdmin: empresa seleccionada
@@ -43,7 +44,7 @@ export class Propietarios implements OnInit {
     const roleStr = localStorage.getItem('user_role');
     this.userRole = roleStr ? parseInt(roleStr, 10) : 0;
 
-    if (this.userRole === 1) {
+    if (this.isSuperAdmin) {
       this.loadEmpresas();
     } else {
       this.loadPropietarios();
@@ -73,7 +74,7 @@ export class Propietarios implements OnInit {
   // ── Cargar propietarios ──
   loadPropietarios() {
     let url = 'http://localhost:8000/modulo_inmuebles/propietarios';
-    if (this.userRole === 1 && this.empresaSeleccionada) {
+    if (this.isSuperAdmin && this.empresaSeleccionada) {
       url += `?id_tenant=${this.empresaSeleccionada}`;
     }
     this.http.get<any[]>(url, { headers: this.getHeaders() })

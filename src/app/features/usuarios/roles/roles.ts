@@ -24,6 +24,7 @@ export class Roles implements OnInit {
     });
   }
 
+  get isSuperAdmin(): boolean { return JSON.parse(localStorage.getItem('user') || '{}').is_superadmin === true; }
   userRole: number = 0;
   empresas: any[] = [];
   groupedRoles: { [key: string]: any[] } = {};
@@ -33,7 +34,7 @@ export class Roles implements OnInit {
     const userRoleStr = localStorage.getItem('user_role');
     this.userRole = userRoleStr ? parseInt(userRoleStr, 10) : 0;
     
-    if (this.userRole === 1) {
+    if (this.isSuperAdmin) {
         this.loadEmpresas();
     } else {
         this.cargarRoles();
@@ -81,7 +82,7 @@ export class Roles implements OnInit {
       this.roles.forEach(rol => {
           let companyName = 'Roles Globales (Sistema)';
           if (rol.id_tenant) {
-              if (this.userRole === 1) {
+              if (this.isSuperAdmin) {
                   const emp = this.empresas.find(e => e.id_tenant === rol.id_tenant);
                   companyName = emp ? emp.nombre : `Empresa ID: ${rol.id_tenant}`;
               } else {

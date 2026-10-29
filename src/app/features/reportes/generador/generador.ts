@@ -2,9 +2,6 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 
 @Component({
   standalone: true,
@@ -54,6 +51,7 @@ export class GeneradorReportes implements OnInit {
   nombreNuevoReporte = '';
   mensaje = '';
 
+  get isSuperAdmin(): boolean { return JSON.parse(localStorage.getItem('user') || '{}').is_superadmin === true; }
   userRole: number = 0;
   empresas: any[] = [];
   empresaFiltro: string = ''; // '' = Todas
@@ -151,7 +149,7 @@ export class GeneradorReportes implements OnInit {
     const userRoleStr = localStorage.getItem('user_role');
     this.userRole = userRoleStr ? parseInt(userRoleStr, 10) : 0;
     
-    if (this.userRole === 1) {
+    if (this.isSuperAdmin) {
       this.cargarEmpresas();
       // Add id_tenant as a selectable column for SuperAdmin
       this.columnasDisponibles.propiedades.unshift({ id: 'id_tenant', label: 'ID Empresa' });
@@ -205,7 +203,7 @@ export class GeneradorReportes implements OnInit {
     const filtrosFinales = this.filtros.filter(f => f.columna && f.valor !== '');
     
     // Si es SuperAdmin y seleccionó una empresa, agregarla como filtro duro
-    if (this.userRole === 1 && this.empresaFiltro !== '') {
+    if (this.isSuperAdmin && this.empresaFiltro !== '') {
       filtrosFinales.push({ columna: 'id_tenant', operador: 'eq', valor: parseInt(this.empresaFiltro, 10) });
     }
 
@@ -287,6 +285,7 @@ export class GeneradorReportes implements OnInit {
     this.resultados.forEach(row => {
       let rowArray = this.columnasResultados.map(col => {
         let val = row[col] === null || row[col] === undefined ? '' : String(row[col]);
+        if (/^[=+@\-\t\r]/.test(val)) val = "'" + val;
         // Escapar comillas dobles y comas si es necesario
         return `"${val.replace(/"/g, '""')}"`;
       });
@@ -300,6 +299,10 @@ export class GeneradorReportes implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  escapeHTML(value: unknown): string {
+    return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   exportarHTML() {
@@ -325,7 +328,7 @@ export class GeneradorReportes implements OnInit {
             <tr>${this.columnasResultados.map(c => `<th>${c.toUpperCase()}</th>`).join('')}</tr>
           </thead>
           <tbody>
-            ${this.resultados.map(row => `<tr>${this.columnasResultados.map(col => `<td>${row[col] || ''}</td>`).join('')}</tr>`).join('')}
+            ${this.resultados.map(row => `<tr>${this.columnasResultados.map(col => `<td>${this.escapeHTML(row[col])}</td>`).join('')}</tr>`).join('')}
           </tbody>
         </table>
       </body>
@@ -340,13 +343,15 @@ export class GeneradorReportes implements OnInit {
     link.click();
   }
 
-  exportarPDF() {
+  async exportarPDF() {
+    const { jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
     if (this.resultados.length === 0) return;
     const doc = new jsPDF();
     doc.text(`Reporte de ${this.entidadSeleccionada}`, 14, 15);
     
     const tableData = this.resultados.map(row => 
-      this.columnasResultados.map(col => String(row[col] || ''))
+      this.columnasResultados.map(col => String(row[col] ?? ''))
     );
 
     autoTable(doc, {
@@ -360,7 +365,8 @@ export class GeneradorReportes implements OnInit {
     doc.save(`Reporte_${this.entidadSeleccionada}_${new Date().getTime()}.pdf`);
   }
 
-  exportarExcel() {
+  async exportarExcel() {
+    const XLSX = await import('xlsx');
     if (this.resultados.length === 0) return;
     
     // Prepare data
@@ -372,8 +378,8 @@ export class GeneradorReportes implements OnInit {
       return newRow;
     });
 
-    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(wsData);
-    const workbook: XLSX.WorkBook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(wsData);
+    const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
     XLSX.writeFile(workbook, `Reporte_${this.entidadSeleccionada}_${new Date().getTime()}.xlsx`);
   }

@@ -22,6 +22,7 @@ export class Login {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
+      id_tenant: [null],
       correo: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
@@ -42,7 +43,7 @@ export class Login {
           });
         },
         error: (err) => {
-          this.errorMessage = 'Credenciales inválidas. Por favor intenta de nuevo.';
+          this.errorMessage = err.error?.detail || 'Credenciales inválidas. Por favor intenta de nuevo.';
         }
       });
     } else {

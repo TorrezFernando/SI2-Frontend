@@ -27,6 +27,7 @@ export class Usuarios implements OnInit {
     });
   }
 
+  get isSuperAdmin(): boolean { return JSON.parse(localStorage.getItem('user') || '{}').is_superadmin === true; }
   userRole: number = 0;
   empresas: any[] = [];
   groupedUsuarios: { [key: string]: any[] } = {};
@@ -36,7 +37,7 @@ export class Usuarios implements OnInit {
     const userRoleStr = localStorage.getItem('user_role');
     this.userRole = userRoleStr ? parseInt(userRoleStr, 10) : 0;
     
-    if (this.userRole === 1) {
+    if (this.isSuperAdmin) {
         this.loadEmpresas();
     } else {
         this.loadUsuarios();
@@ -72,7 +73,7 @@ export class Usuarios implements OnInit {
       this.usuarios.forEach(user => {
           let companyName = 'Sin Empresa Asignada';
           if (user.id_tenant) {
-              if (this.userRole === 1) {
+              if (this.isSuperAdmin) {
                   const emp = this.empresas.find(e => e.id_tenant === user.id_tenant);
                   companyName = emp ? emp.nombre : `Empresa ID: ${user.id_tenant}`;
               } else {

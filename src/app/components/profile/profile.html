@@ -11,6 +11,7 @@
             </div>
 
             <form [formGroup]="passwordForm" (ngSubmit)="cambiarPassword()">
+                <label for="actual_password">Contraseña actual</label><input id="actual_password" type="password" formControlName="actual_password" class="modern-input" autocomplete="current-password">
                 <div class="form-group mb-6">
                     <label for="nueva_password" class="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Nueva Contraseña</label>
                     <input type="password" id="nueva_password" formControlName="nueva_password" class="modern-input" placeholder="Escribe tu nueva contraseña">

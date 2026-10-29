@@ -17,6 +17,7 @@ export class Profile {
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.passwordForm = this.fb.group({
+      actual_password: ['', Validators.required],
       nueva_password: ['', [
         Validators.required, 
         Validators.minLength(8),
@@ -32,7 +33,8 @@ export class Profile {
       
       this.http.put('http://localhost:8000/gestion_usuarios/users/me/password', this.passwordForm.value, { headers }).subscribe({
         next: (res: any) => {
-          this.mensaje = '¡Contraseña actualizada con éxito!';
+          this.mensaje = 'Contraseña actualizada. Inicia sesión nuevamente.';
+          localStorage.clear();
           this.error = false;
           this.passwordForm.reset();
         },

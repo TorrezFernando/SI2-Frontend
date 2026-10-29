@@ -11,6 +11,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 })
 export class Propiedades implements OnInit {
   propiedades: any[] = [];
+  tipos: any[] = [];
+  zonas: any[] = [];
+  selectedImage: File | null = null;
   propietarios: any[] = [];
   agentes: any[] = [];
   empresas: any[] = [];
@@ -20,6 +23,7 @@ export class Propiedades implements OnInit {
 
   mensajeError: string = '';
   mensajeExito: string = '';
+  get isSuperAdmin(): boolean { return JSON.parse(localStorage.getItem('user') || '{}').is_superadmin === true; }
   userRole: number = 0;
 
   // Super Admin: empresa seleccionada para filtrar
@@ -34,6 +38,8 @@ export class Propiedades implements OnInit {
 
   constructor(private http: HttpClient, private fb: FormBuilder, private cdr: ChangeDetectorRef) {
     const formDef = {
+      id_tipo_inmueble: ['', Validators.required],
+      id_zona: ['', Validators.required],
       id_propietario: ['', Validators.required],
       id_agente: ['', Validators.required],
       titulo: ['', Validators.required],
@@ -48,10 +54,12 @@ export class Propiedades implements OnInit {
   }
 
   ngOnInit() {
+    this.http.get<any[]>('http://localhost:8000/modulo_inmuebles/tipos', {headers: this.getHeaders()}).subscribe(data => {this.tipos = data; this.cdr.detectChanges();});
+    this.http.get<any[]>('http://localhost:8000/modulo_inmuebles/zonas', {headers: this.getHeaders()}).subscribe(data => {this.zonas = data; this.cdr.detectChanges();});
     const roleStr = localStorage.getItem('user_role');
     this.userRole = roleStr ? parseInt(roleStr, 10) : 0;
 
-    if (this.userRole === 1) {
+    if (this.isSuperAdmin) {
       this.loadEmpresas();
     } else {
       this.loadPropiedades();
@@ -85,7 +93,7 @@ export class Propiedades implements OnInit {
   // ── Cargar datos ──
   loadPropiedades() {
     let url = 'http://localhost:8000/modulo_inmuebles/propiedades';
-    if (this.userRole === 1 && this.empresaSeleccionada) {
+    if (this.isSuperAdmin && this.empresaSeleccionada) {
       url += `?id_tenant=${this.empresaSeleccionada}`;
     }
     this.http.get<any[]>(url, { headers: this.getHeaders() })
@@ -97,7 +105,7 @@ export class Propiedades implements OnInit {
 
   loadPropietarios() {
     let url = 'http://localhost:8000/modulo_inmuebles/propietarios';
-    if (this.userRole === 1 && this.empresaSeleccionada) {
+    if (this.isSuperAdmin && this.empresaSeleccionada) {
       url += `?id_tenant=${this.empresaSeleccionada}`;
     }
     this.http.get<any[]>(url, { headers: this.getHeaders() })
@@ -106,7 +114,7 @@ export class Propiedades implements OnInit {
 
   loadAgentes() {
     let url = 'http://localhost:8000/modulo_inmuebles/agentes';
-    if (this.userRole === 1 && this.empresaSeleccionada) {
+    if (this.isSuperAdmin && this.empresaSeleccionada) {
       url += `?id_tenant=${this.empresaSeleccionada}`;
     }
     this.http.get<any[]>(url, { headers: this.getHeaders() })
@@ -115,7 +123,8 @@ export class Propiedades implements OnInit {
 
   // ── Crear propiedad ──
   abrirModalCrear() {
-    this.propiedadForm.reset({ tipo_operacion: 'Venta' });
+    this.propiedadForm.reset({ tipo_operacion: 'Venta', descripcion: '' });
+    this.selectedImage = null;
     this.mensajeError = '';
     this.mostrarModalCrear = true;
   }
@@ -125,6 +134,7 @@ export class Propiedades implements OnInit {
       this.mensajeError = '';
       const formData = {
         ...this.propiedadForm.value,
+        descripcion: this.propiedadForm.value.descripcion || '',
         id_propietario: parseInt(this.propiedadForm.value.id_propietario, 10),
         id_agente: parseInt(this.propiedadForm.value.id_agente, 10),
         precio: parseFloat(this.propiedadForm.value.precio),
@@ -132,7 +142,16 @@ export class Propiedades implements OnInit {
       };
       this.http.post('http://localhost:8000/modulo_inmuebles/propiedades', formData, { headers: this.getHeaders() })
         .subscribe({
-          next: () => {
+          next: (res: any) => {
+            if (this.selectedImage) {
+              const fd = new FormData();
+              fd.append('file', this.selectedImage);
+              this.http.post('http://localhost:8000/modulo_inmuebles/propiedades/' + res.id_propiedad + '/imagenes', fd, {headers: this.getHeaders()}).subscribe({
+                next: () => this.loadPropiedades(),
+                error: () => { this.mensajeError = 'El inmueble se guardó, pero la imagen no pudo subirse.'; this.cdr.detectChanges(); }
+              });
+              this.selectedImage = null;
+            }
             this.loadPropiedades();
             this.mostrarModalCrear = false;
             this.mensajeExito = '¡Propiedad creada exitosamente!';
@@ -149,32 +168,17 @@ export class Propiedades implements OnInit {
 
   subiendoImagen = false;
   onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.subiendoImagen = true;
-      this.cdr.detectChanges();
-      const fd = new FormData();
-      fd.append('file', file);
-      this.http.post('http://localhost:8000/upload', fd).subscribe({
-        next: (res: any) => {
-          this.propiedadForm.patchValue({ imagen_url: res.url });
-          this.subiendoImagen = false;
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error(err);
-          this.subiendoImagen = false;
-          alert('Error al subir imagen');
-          this.cdr.detectChanges();
-        }
-      });
+    this.selectedImage = event.target.files?.[0] || null;
+    if (this.selectedImage && this.selectedImage.size > 5 * 1024 * 1024) {
+      this.mensajeError = 'La imagen no puede superar 5 MB.';
+      this.selectedImage = null;
     }
   }
 
   generandoDescripcion = false;
 
-  generarDescripcionIA() {
-    const f = this.propiedadForm.value;
+  generarDescripcionIA(esEdicion: boolean = false) {
+    const f = esEdicion ? this.editForm.value : this.propiedadForm.value;
     if (!f.titulo || !f.direccion || !f.precio || !f.tipo_operacion) {
       alert("Por favor, llena el título, dirección, precio y tipo de operación para que la IA pueda generar la descripción.");
       return;
@@ -183,35 +187,61 @@ export class Propiedades implements OnInit {
     this.generandoDescripcion = true;
     this.cdr.detectChanges();
 
-    const payload = {
-      titulo: f.titulo,
-      direccion: f.direccion,
-      precio: f.precio,
-      tipo_operacion: f.tipo_operacion
+    const enviarPeticion = (imagenBase64: string | null = null) => {
+      const payload: any = {
+        titulo: f.titulo,
+        direccion: f.direccion,
+        precio: f.precio,
+        tipo_operacion: f.tipo_operacion
+      };
+
+      if (imagenBase64) {
+        payload.imagen_base64 = imagenBase64;
+      } else if (f.imagen_url) {
+        payload.imagen_url = f.imagen_url;
+      } else if (esEdicion && this.propiedadEditando?.imagenes?.length > 0) {
+        payload.imagen_url = this.propiedadEditando.imagenes[0].url;
+      }
+
+      this.http.post('http://localhost:8000/api/ia/generar-descripcion', payload, { headers: this.getHeaders() })
+        .subscribe({
+          next: (res: any) => {
+            this.generandoDescripcion = false;
+            if (res.success && res.descripcion) {
+              if (esEdicion) {
+                this.editForm.patchValue({ descripcion: res.descripcion });
+              } else {
+                this.propiedadForm.patchValue({ descripcion: res.descripcion });
+              }
+            }
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.generandoDescripcion = false;
+            console.error(err);
+            alert("Hubo un error al generar la descripción con IA.");
+            this.cdr.detectChanges();
+          }
+        });
     };
 
-    this.http.post('http://localhost:8000/api/ia/generar-descripcion', payload, { headers: this.getHeaders() })
-      .subscribe({
-        next: (res: any) => {
-          this.generandoDescripcion = false;
-          if (res.success && res.descripcion) {
-            this.propiedadForm.patchValue({ descripcion: res.descripcion });
-          }
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          this.generandoDescripcion = false;
-          console.error(err);
-          alert("Hubo un error al generar la descripción con IA.");
-          this.cdr.detectChanges();
-        }
-      });
+    if (this.selectedImage) {
+      const reader = new FileReader();
+      reader.onload = () => enviarPeticion(reader.result as string);
+      reader.onerror = () => enviarPeticion(null);
+      reader.readAsDataURL(this.selectedImage);
+    } else {
+      enviarPeticion(null);
+    }
   }
 
   // ── Editar propiedad ──
   abrirEditar(prop: any) {
     this.propiedadEditando = prop;
     this.editForm.patchValue({
+      id_tipo_inmueble: prop.id_tipo_inmueble,
+      id_zona: prop.id_zona,
+      descripcion: prop.descripcion || '',
       id_propietario: prop.id_propietario,
       id_agente: prop.id_agente,
       titulo: prop.titulo,
@@ -228,6 +258,7 @@ export class Propiedades implements OnInit {
     if (this.editForm.valid && this.propiedadEditando) {
       const formData = {
         ...this.editForm.value,
+        descripcion: this.editForm.value.descripcion || '',
         id_propietario: parseInt(this.editForm.value.id_propietario, 10),
         id_agente: parseInt(this.editForm.value.id_agente, 10),
         precio: parseFloat(this.editForm.value.precio)

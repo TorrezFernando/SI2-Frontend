@@ -12,7 +12,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class Catalogo implements OnInit, OnDestroy {
   propiedades: any[] = [];
-  private ws: WebSocket | null = null;
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
   
   filtroOperacion: string = '';
   filtroPrecioMin: number | null = null;
@@ -47,6 +47,43 @@ export class Catalogo implements OnInit, OnDestroy {
     this.propiedadSeleccionada = null;
   }
 
+  // Asistente Chatbot IA
+  mostrarChat: boolean = false;
+  chatMensajes: {role: string, content: string}[] = [];
+  chatInput: string = '';
+  cargandoChat: boolean = false;
+
+  toggleChat() {
+    this.mostrarChat = !this.mostrarChat;
+    if (this.mostrarChat && this.chatMensajes.length === 0) {
+      this.chatMensajes.push({role: 'model', content: '¡Hola! Soy tu Asistente Mágico ✨. Dime, ¿qué tipo de propiedad estás buscando? (Ej. Busco una casa en Venta con presupuesto de 100 mil)'});
+    }
+  }
+
+  enviarMensaje() {
+    if (!this.chatInput.trim()) return;
+    const msg = this.chatInput.trim();
+    this.chatMensajes.push({role: 'user', content: msg});
+    this.chatInput = '';
+    this.cargandoChat = true;
+    
+    // We send only the current message, history is optional for our basic prompt right now
+    this.http.post('http://localhost:8000/api/ia/chat-catalogo', { mensaje: msg }, {headers: new HttpHeaders().set('Authorization', 'Bearer ' + localStorage.getItem('token'))}).subscribe({
+      next: (res: any) => {
+        this.cargandoChat = false;
+        if (res.success) {
+          this.chatMensajes.push({role: 'model', content: res.respuesta});
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.cargandoChat = false;
+        this.chatMensajes.push({role: 'model', content: 'Hubo un error al contactar al asistente. Intenta de nuevo más tarde.'});
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   constructor(private http: HttpClient, private authService: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -55,38 +92,11 @@ export class Catalogo implements OnInit, OnDestroy {
   }
 
   connectWebSocket() {
-    this.ws = new WebSocket('ws://localhost:8000/ws/propiedades');
-    this.ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.event === 'estado_updated') {
-          // Update the UI
-          const propIndex = this.propiedades.findIndex(p => p.id_propiedad === data.id_propiedad);
-          if (propIndex !== -1) {
-            this.propiedades[propIndex].estado = data.nuevo_estado;
-            this.cdr.detectChanges();
-          }
-          // If modal is open for this property, update it too
-          if (this.propiedadSeleccionada && this.propiedadSeleccionada.id_propiedad === data.id_propiedad) {
-            this.propiedadSeleccionada.estado = data.nuevo_estado;
-            this.cdr.detectChanges();
-          }
-        }
-      } catch (e) {
-        console.error("Error parsing WS message", e);
-      }
-    };
-    this.ws.onclose = () => {
-      console.log('WebSocket connection closed, reconnecting in 5s...');
-      setTimeout(() => this.connectWebSocket(), 5000);
-    };
+    this.refreshTimer = setInterval(() => this.aplicarFiltros(), 30000);
   }
 
   ngOnDestroy() {
-    if (this.ws) {
-      this.ws.onclose = null; // Prevent auto-reconnect
-      this.ws.close();
-    }
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
   aplicarFiltros() {

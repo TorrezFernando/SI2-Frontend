@@ -18,6 +18,7 @@ export class Agentes implements OnInit {
   mensajeError: string = '';
   mensajeExito: string = '';
   
+  get isSuperAdmin(): boolean { return JSON.parse(localStorage.getItem('user') || '{}').is_superadmin === true; }
   userRole: number = 0;
   empresaSeleccionada: number | null = null;
   
@@ -31,7 +32,7 @@ export class Agentes implements OnInit {
     const roleStr = localStorage.getItem('user_role');
     this.userRole = roleStr ? parseInt(roleStr, 10) : 0;
 
-    if (this.userRole === 1) {
+    if (this.isSuperAdmin) {
       this.loadEmpresas();
     } else {
       this.loadAgentes();
@@ -59,7 +60,7 @@ export class Agentes implements OnInit {
 
   loadAgentes() {
     let url = 'http://localhost:8000/modulo_inmuebles/agentes';
-    if (this.userRole === 1 && this.empresaSeleccionada) {
+    if (this.isSuperAdmin && this.empresaSeleccionada) {
       url += `?id_tenant=${this.empresaSeleccionada}`;
     }
     this.http.get(url, { headers: this.getHeaders() })
@@ -75,7 +76,7 @@ export class Agentes implements OnInit {
       this.mensajeExito = '';
       
       let payload = this.agenteForm.value;
-      if (this.userRole === 1 && this.empresaSeleccionada) {
+      if (this.isSuperAdmin && this.empresaSeleccionada) {
         payload = { ...payload, id_tenant: this.empresaSeleccionada };
       }
 
